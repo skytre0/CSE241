@@ -1,0 +1,68 @@
+Assignment 1
+음성 파일 인식, type shorts인 array로 제공
+함수의 () 안에 *을 쓰면 주소를 입력하라는 의미 = 주로 배열 이용.
+
+목적 : 
+0. 파일 이름 입력 받고 -> 파일 열어서 분석 (파일 이름 : s02.wav) 모양.
+
+1. 진폭 최고점 확인(0에서 가장 먼 값 구하기 -> 절댓값 std::abs 사용)
+-> short = 2byte, 범위 : -32768 ~ 32767임 -> 그래헛 truncate 발생. 
+-> cout << abs(-32768)=32768이지만, a = -32768; a=abs(a) = -32768이 되기에 중간에 확인 필요함. -> 확인 결과 if (abs(a) == 32768) 이 True로 나옴 -> 숫자 적기 싫으면 SHRT_MIN, SHRT_MAX = -32768, 32767 자동으로 나오는 거 이용.
+
+2. 초 단위로 정적(무음)인 시간 구하기 -> 최소 0.5초 지속, 진폭 +/-1000 이하 지속,
+44100 sample = 1초 -> 시작하는 위치만 구하면 됨, 끝나는 점은 안 구해도 됨.
+
+3. 출력 : 진폭 최고점 = int 방식으로 출력(소숫점 X), 정적(무음) 시간 = float 방식으로 출력(%4.4로 앞 4개, 뒤 4개), 최대 10개 정적인 시간 출력.
+
+4. dynamic memory management = 동적 메모리 할당 = malloc 등 -> 금지!!
+
+5. wav_file_data 일부 array에 넣어야 함, stack 메모리 100만 byte 초과하면 안 됨. -> few thousand 정도 교수님은 추천
+
+6. size_t find_silence(string filename, double* times, size_t max_n) -> 이 함수 만들어서 이용해야 함. -> times = array에 대한 pointer, max_n = array 크기 -> 너무 많이 찾으면, function은 그만 찾아야 함. -> return 값은 array에 있는 times의 개수
+
+7. 제출 파일 : .zip 파일로 wav_file.h , wav_file.cc , Makefile , a01.cc 로만 구성. -> a01.cc = source file, make 하면 a01.exe가 만들어져야 함.
+
+할 일 : 
+1. 변수 제작 : string - filename, size_t - length, unsigned_long - sampling_rate, short - data[], size_t - off, size_t - len,
+2. array 확인 : short array 안 값 모두 숫자, str 아님.
+
+
+??. find_silence : [10] 해서 최대 10개까지 period of silence 저장하게, 그 이상 나오면 stop 하도록. -> 이 안에 wav_file_info랑 data 넣으면 가능할 듯.
+
+??. makefile 사용 'make a01' 하면 됨
+
+
+코드 분석 : 
+1. return a | b | c | d -> 이 경우 a,b,c,d 중 true 여러 개이면 여러 개 모두 return, 중간에 b가 안 되더라도 a, c, d는 return 가능.
+2. wav_file_info 에서 length, sampling_rate = 배열 아님! -> 이유는 숫자를 구하려는 거임.
+3. data[n] -> 여기에서 n이 .wav 파일의 length 보다 크면 에러 발생함.
+4. .fail -> 실제로 읽으려는 함수보다 큰 값을 집어넣으려고 하는 경우 실패 -> .wav는 132,300인데 배열 1,000,000인 경우
+5. off -> 시작 위치 변경으로 재귀법 이용해서 시작 지점 변경 가능으로 보임. -> data는 100,000이지만, 기존 .wav 파일이 100,000이 넘으면 off+n을 했을 때, n + 100,000이 기존 .wav파일의 용량보다 작으면 기존에 들어왔던 0번째 숫자를 건너뛰고, 99,999 개수 제한 때문에 넣지 못한 100,000 번째가 마지막에 들어오는 방식.
+
+
+
+Assignment 2
+1. class hierarchy 제작 -> expression tree 표현 가능해야 함.
+2. operation 작동해야 함. -> 미분 등.
+3. parse가 expression tree 제작해줌.
+4. x의 값 주고, 식 주면 식 미분 결과 + 대입 결과 출력.
+5. parse 정확하게 작동하려면, pdf 내용 "그대로" class 이름을 적어야 함.
+5-1. leaf node는 2 type -> int_literal, monomial
+5-2. internal node는 3 types -> addition, multiplication, division
+6. 위의 node에 new 사용하기에 사용하면 뒤에 delete해서 memory leak 등 방지해야 함.
+7. 식 미분 후 x에 값 대입 결과 double로 나옴.
+8. 90%는 답이 얼추 맞으면 됨, 100%는 식 간략화 -> ex) 1*x + 0 -> x로만 표현, 3*2*x -> 6*x로 간략화 등.
+9. address sanitizer로 makefile 사용해야 함. global variable 금지. 
+10. 제출 양식 있음.
+
+추가 : 
+- x^2는 그냥 x2로 적음.
+- expr.cc, expr.h에 nodes 변경, 수정, parse가 그대로 이어붙이기만 함(계산 순서는 parse가 자동으로, 내부적 변화만 내가)
+
+깨달은 내용 : 
+- e->optimize() 모양은 this = e를 의미, addition(a, b)의 this는 addition의 this -> a의 것 얻으려면 a->getnl() 해야 함.
+- void add(int& a) 모양의 경우 a의 pointer를 입력해야 하지만, 함수에서 사용할 때는 a 쓰면 a 변수로 사용(pointer가 아닌 내용)
+- expr* expr::simple_derivative() -> 여기에서 this = pointer로 expr* e->simple... 모양 비슷하게 하면 this = pointer. expr* simple...은 return this;, expr& simple...은 return *this; 로 둘이 다름.
+- expr* e = .....; 하고, expr* e00 = e; 하면 e00 = e가 됨 -> 이유는 pointer끼리 서로의 값을 동일하게 한다 = 둘이 같은 대상을 가리킨다 = e를 불러서 값을 바꿔도 공통된 대상을 지칭해서 사실상 e00의 값도 바뀐다.
+-> 그래서 expr type을 가리키는 pointer는 copy constructor / assignment operator의 대상이 아님.
++ 참고로 pointer라서 처음 소환할 때 초기화 해야 함, 아니면 이상한 값 가리켜서 (expr e;으로 안(못) 적은 이유)
