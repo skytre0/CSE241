@@ -1,4 +1,4 @@
-# UNIST 2-1 Advanced Programming Assignments
+# Advanced Programming
 
 This repository contains the programming assignments for the UNIST 2-1 Advanced Programming course. Each assignment is structured into independent directories for systematic management.
 
