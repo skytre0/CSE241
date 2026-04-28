@@ -65,6 +65,3 @@ make main
 # Enter a mathematical expression (e.g., x2 + 3*x + 1)
 # Enter an x value to evaluate at (e.g., 2)
 ```
-
----
-*This code was written for educational purposes.*
